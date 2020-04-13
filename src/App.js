@@ -1,26 +1,50 @@
-import React from "react";
+//importa funcionalidade de detectar mudanças e estados
+import React, { useState, useEffect } from "react";
+//axios
+import api from './services/api';
 
 import "./styles.css";
 
 function App() {
+  const [repositories, setRepositories] = useState([]);
+
+  useEffect( () => {
+    api.get('repositories').then (response => {
+      setRepositories(response.data);
+    });
+  } , [] );
+
   async function handleAddRepository() {
-    // TODO
+    //pegar o resultado da API
+    const response = await api.post('repositories', {
+      title: 'Umbriel',
+      url: 'https://github.com/rocketseat/umbriel',
+      techs: ['Node.js', 'ReactJS']
+    })
+
+    setRepositories([...repositories,response.data]);
   }
 
   async function handleRemoveRepository(id) {
-    // TODO
+    await api.delete(`repositories/${id}`);
+
+    setRepositories(repositories.filter(
+      repository => repository.id !== id
+    ))
   }
 
   return (
     <div>
       <ul data-testid="repository-list">
-        <li>
-          Repositório 1
+        {repositories.map( repository => (
+          <li key={repository.id}>
+          {repository.title}
 
-          <button onClick={() => handleRemoveRepository(1)}>
+          <button onClick={() => handleRemoveRepository(repository.id)}>
             Remover
           </button>
-        </li>
+          </li>
+        ))}
       </ul>
 
       <button onClick={handleAddRepository}>Adicionar</button>
